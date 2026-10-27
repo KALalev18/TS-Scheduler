@@ -47,7 +47,7 @@ ts-scheduler handles these explicitly, with documented rules and tests for each.
 - **Persistence.** A `StorageAdapter` interface with in-memory and JSON-file implementations. The file adapter writes atomically and validates loaded data with zod. Tasks survive restarts with at-least-once delivery.
 - **Injectable clock.** `FakeClock` runs a week of schedules in milliseconds, which is how the test suite works.
 - **CLI:** `ts-scheduler add | list | next | remove | run`, built on the public API.
-- **Packaging:** ESM and CommonJS builds with type declarations. CI on Linux and Windows; release with Changesets and npm trusted publishing.
+- **Packaging:** ESM and CommonJS builds with type declarations. CI on Linux and Windows (running on both caught two file-error differences in the JSON store); release with Changesets and npm trusted publishing.
 
 ## Tech stack
 
@@ -55,7 +55,7 @@ TypeScript 6 (`strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`
 
 ## Quick start
 
-> Not on npm yet. The release workflow is ready; until the first release, install from source (below).
+> Not on npm yet. The release workflow is ready and runs once the repository is public; until the first release, install from source (below).
 
 ```bash
 git clone https://github.com/KALalev18/TS-Scheduler.git
@@ -220,7 +220,7 @@ bench/                benchmarks behind the numbers above
 scripts/demo-svg.ts   records docs/demo.svg from real CLI output
 ```
 
-API reference: generated with `npm run docs` (TypeDoc) and published to GitHub Pages by the `API docs` workflow.
+API reference: generated with `npm run docs` (TypeDoc) and published to GitHub Pages by the `API docs` workflow once the repository is public. Until then, run `npm run docs` and open `docs/api/index.html`.
 
 ## Limitations
 
