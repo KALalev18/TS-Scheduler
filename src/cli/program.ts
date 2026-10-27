@@ -10,6 +10,7 @@ import {
   type TaskSnapshot,
 } from '../scheduler.js';
 import { JsonFileStorage } from '../storage/json-file.js';
+import packageJson from '../../package.json' with { type: 'json' };
 import { formatDuration, formatTime, parseDuration, parseInteger, table } from './format.js';
 
 /** The CLI has one task type: print a message. Failures and work time can be simulated for demos. */
@@ -85,7 +86,7 @@ export function createProgram(io: CliIO): Command {
   const program = new Command()
     .name('ts-scheduler')
     .description('Schedule tasks by priority, deadline and RRULE recurrence.')
-    .version('0.0.0')
+    .version(packageJson.version)
     .option(
       '-f, --file <path>',
       'JSON file that stores the tasks',
