@@ -35,6 +35,7 @@ export { DEFAULT_RETRY, backoffDelay, resolveRetry } from './retry.js';
 export type { RetryPolicy } from './retry.js';
 
 export { TypedEmitter } from './events.js';
+export type { Listener } from './events.js';
 
 export {
   StorageError,
@@ -45,7 +46,12 @@ export {
 
 export { MemoryStorage } from './storage/memory.js';
 export { JsonFileStorage } from './storage/json-file.js';
-export { storageFileSchema, storedTaskSchema } from './storage/schema.js';
+export {
+  copyStoredTask,
+  storageFileSchema,
+  storedScheduleSchema,
+  storedTaskSchema,
+} from './storage/schema.js';
 export type {
   JsonValue,
   StorageAdapter,

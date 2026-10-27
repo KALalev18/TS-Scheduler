@@ -1,0 +1,14 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "ts-scheduler",
+  "entryPoints": ["src/index.ts"],
+  "out": "docs/api",
+  "readme": "none",
+  "excludePrivate": true,
+  "excludeInternal": true,
+  "includeVersion": true,
+  "githubPages": true,
+  "navigationLinks": {
+    "GitHub": "https://github.com/KALalev18/TS-Scheduler"
+  }
+}

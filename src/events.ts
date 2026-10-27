@@ -1,4 +1,4 @@
-type Listener<T> = (payload: T) => void;
+export type Listener<T> = (payload: T) => void;
 
 /**
  * Minimal typed event emitter: event names and payload types come from `Events`,
