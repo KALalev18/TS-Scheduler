@@ -12,6 +12,7 @@ import {
 import { JsonFileStorage } from '../storage/json-file.js';
 import packageJson from '../../package.json' with { type: 'json' };
 import { formatDuration, formatTime, parseDuration, parseInteger, table } from './format.js';
+import { acquireLock, lockHolder, runningMessage } from './lock.js';
 
 /** The CLI has one task type: print a message. Failures and work time can be simulated for demos. */
 export interface CliPayloads {
@@ -186,6 +187,7 @@ export function createProgram(io: CliIO): Command {
       } else {
         schedule = { delayMs: options.in === undefined ? 0 : parseDuration(options.in) };
       }
+      await ensureNotRunning();
       const scheduler = createScheduler();
       const task = await scheduler.add(
         'echo',
@@ -268,6 +270,7 @@ export function createProgram(io: CliIO): Command {
     .description('Delete a task by id (a unique prefix is enough)')
     .argument('<id>')
     .action(async (prefix: string) => {
+      await ensureNotRunning();
       const scheduler = createScheduler();
       await scheduler.load();
       const matches = scheduler.list().filter((task) => task.id.startsWith(prefix));
@@ -287,27 +290,41 @@ export function createProgram(io: CliIO): Command {
     .option('-c, --concurrency <n>', 'tasks allowed to run at once', '1')
     .option('--for <duration>', 'stop after this long')
     .action(async (options: { concurrency: string; for?: string }) => {
-      const scheduler = createScheduler(parseInteger(options.concurrency, '--concurrency', 1));
-      await scheduler.load();
-      const pending = scheduler.list().filter((t) => t.state === 'pending').length;
-      io.out(paint('dim', `running ${pending} pending task(s), press Ctrl+C to stop`));
-      await scheduler.start();
-      const stopAfter =
-        options.for === undefined
-          ? undefined
-          : new Promise<'graceful'>((resolve) =>
-              clock.setTimer(
-                () => {
-                  resolve('graceful');
-                },
-                parseDuration(options.for ?? '0ms'),
-              ),
-            );
-      const interrupt = io.waitForInterrupt?.() ?? new Promise<never>(() => undefined);
-      const how = await Promise.race([interrupt, ...(stopAfter ? [stopAfter] : [])]);
-      io.out(paint('dim', how === 'abort' ? 'aborting running tasks…' : 'stopping…'));
-      await scheduler.stop({ abortRunning: how === 'abort' });
+      // Validate everything before taking the lock and starting.
+      const concurrency = parseInteger(options.concurrency, '--concurrency', 1);
+      const runForMs = options.for === undefined ? undefined : parseDuration(options.for);
+      const release = await acquireLock(program.opts<{ file: string }>().file);
+      try {
+        await runUntilStopped(createScheduler(concurrency), runForMs);
+      } finally {
+        await release();
+      }
     });
+
+  const ensureNotRunning = async () => {
+    const { file } = program.opts<{ file: string }>();
+    const pid = await lockHolder(file);
+    if (pid !== null) throw new Error(runningMessage(file, pid));
+  };
+
+  const runUntilStopped = async (scheduler: Scheduler<CliPayloads>, runForMs?: number) => {
+    await scheduler.load();
+    const pending = scheduler.list().filter((t) => t.state === 'pending').length;
+    io.out(paint('dim', `running ${pending} pending task(s), press Ctrl+C to stop`));
+    await scheduler.start();
+    const stopAfter =
+      runForMs === undefined
+        ? undefined
+        : new Promise<'graceful'>((resolve) =>
+            clock.setTimer(() => {
+              resolve('graceful');
+            }, runForMs),
+          );
+    const interrupt = io.waitForInterrupt?.() ?? new Promise<never>(() => undefined);
+    const how = await Promise.race([interrupt, ...(stopAfter ? [stopAfter] : [])]);
+    io.out(paint('dim', how === 'abort' ? 'aborting running tasks…' : 'stopping…'));
+    await scheduler.stop({ abortRunning: how === 'abort' });
+  };
 
   return program;
 }

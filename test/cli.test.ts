@@ -1,8 +1,9 @@
-import { mkdtemp, rm } from 'node:fs/promises';
+import { access, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { formatDuration, parseDuration, parseInteger, table } from '../src/cli/format.js';
+import { lockPath } from '../src/cli/lock.js';
 import { runCli, type CliIO } from '../src/cli/program.js';
 import { FakeClock } from '../src/clock.js';
 
@@ -242,6 +243,55 @@ describe('cli: run', () => {
     cli.out.length = 0;
     await cli.run('ls');
     expect(cli.text()).toMatch(/long job\s+pending/);
+  });
+});
+
+describe('cli: run lock', () => {
+  const exists = (path: string) =>
+    access(path).then(
+      () => true,
+      () => false,
+    );
+
+  it('refuses a second run and edits while a run is active', async () => {
+    let interrupt: (how: 'graceful' | 'abort') => void = () => undefined;
+    const first = harness({
+      waitForInterrupt: () => new Promise((resolve) => (interrupt = resolve)),
+    });
+    const running = first.run('run');
+    while (!first.text().includes('running'))
+      await new Promise((resolve) => setTimeout(resolve, 5));
+    expect(await exists(lockPath(file))).toBe(true);
+
+    const second = harness();
+    expect(await second.run('run')).toBe(1);
+    expect(await second.run('add', 'x', '--in', '1s')).toBe(1);
+    expect(await second.run('rm', 'abc')).toBe(1);
+    expect(second.err).toHaveLength(3);
+    for (const message of second.err) {
+      expect(message).toContain(`"ts-scheduler run" (process ${process.pid}) is using`);
+    }
+    // Read-only commands still work.
+    expect(await second.run('list')).toBe(0);
+
+    interrupt('graceful');
+    expect(await running).toBe(0);
+    expect(await exists(lockPath(file))).toBe(false);
+    expect(await second.run('add', 'x', '--in', '1s')).toBe(0);
+  });
+
+  it('takes over a lock left by a process that no longer exists', async () => {
+    await writeFile(lockPath(file), '2147483646');
+    const cli = harness();
+    expect(await cli.run('run', '--for', '10ms')).toBe(0);
+    expect(cli.err).toEqual([]);
+    expect(await exists(lockPath(file))).toBe(false);
+  });
+
+  it('validates options before taking the lock', async () => {
+    const cli = harness();
+    expect(await cli.run('run', '--for', 'forever')).toBe(1);
+    expect(await exists(lockPath(file))).toBe(false);
   });
 });
 
