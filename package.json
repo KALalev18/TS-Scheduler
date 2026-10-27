@@ -1,0 +1,92 @@
+{
+  "name": "@kalalev18/ts-scheduler",
+  "version": "0.0.0",
+  "description": "Typed TypeScript task scheduler: binary-heap priority queue, iCalendar RRULE recurrence with time-zone and DST handling, retries, timeouts and pluggable persistence.",
+  "keywords": [
+    "scheduler",
+    "task-scheduler",
+    "priority-queue",
+    "binary-heap",
+    "rrule",
+    "recurrence",
+    "temporal",
+    "timezone",
+    "dst",
+    "typescript"
+  ],
+  "author": "Kristian Lalev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KALalev18/TS-Scheduler.git"
+  },
+  "homepage": "https://github.com/KALalev18/TS-Scheduler#readme",
+  "bugs": "https://github.com/KALalev18/TS-Scheduler/issues",
+  "type": "module",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "ts-scheduler": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "bench": "tsx bench/heap.bench.ts",
+    "docs": "typedoc",
+    "cli": "tsx src/cli/main.ts",
+    "check": "npm run lint && npm run format:check && npm run typecheck && npm run coverage && npm run build",
+    "changeset": "changeset",
+    "release": "npm run build && changeset publish"
+  },
+  "dependencies": {
+    "commander": "15.0.0",
+    "temporal-polyfill": "1.0.6",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "1.0.1",
+    "@changesets/cli": "3.0.3",
+    "@eslint/js": "10.0.1",
+    "@types/node": "22.20.5",
+    "@vitest/coverage-v8": "5.0.5",
+    "eslint": "10.13.0",
+    "fast-check": "4.10.2",
+    "prettier": "3.9.10",
+    "tsup": "9.0.0",
+    "tsx": "4.23.15",
+    "typedoc": "0.28.20",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.0.5"
+  }
+}

@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+docs/api/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+schedule.json
+*.tmp
+.DS_Store
+Thumbs.db
