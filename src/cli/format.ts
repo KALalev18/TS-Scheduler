@@ -33,6 +33,14 @@ export function formatTime(ms: number, timeZone: string): string {
     .replace('T', ' ');
 }
 
+/** `14:52:04.123`, in the given time zone. */
+export function formatClockTime(ms: number, timeZone: string): string {
+  return Temporal.Instant.fromEpochMilliseconds(ms)
+    .toZonedDateTimeISO(timeZone)
+    .toPlainTime()
+    .toString({ smallestUnit: 'millisecond' });
+}
+
 /** Left-aligned text table with a header row. */
 export function table(header: readonly string[], rows: readonly (readonly string[])[]): string {
   const widths = header.map((h, i) => Math.max(h.length, ...rows.map((r) => (r[i] ?? '').length)));

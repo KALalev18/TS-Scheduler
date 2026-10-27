@@ -89,7 +89,8 @@ describe('cli: add, list, remove', () => {
         'Monday standup',
       ),
     ).toBe(0);
-    expect(cli.out[0]).toMatch(/^added [0-9a-f]{8}, first run /);
+    expect(cli.out[0]).toMatch(/^added "later" \([0-9a-f]{8}\), first run 2026-06-01 \d\d:00:00/);
+    expect(cli.out[2]).toMatch(/^added "Monday standup" \([0-9a-f]{8}\), first run /);
 
     cli.out.length = 0;
     await cli.run('list', '--tz', 'UTC');
@@ -194,13 +195,37 @@ describe('cli: run', () => {
     cli.out.length = 0;
     expect(await runFor(cli, clock, 5000)).toBe(0);
     const log = cli.text();
-    expect(log).toContain('running 2 pending task(s)');
+    expect(log).toContain('running 2 pending tasks,');
     expect(log).toMatch(/started\s+\w{8}\s+backup/);
     expect(log).toMatch(/failed\s+\w{8}\s+upload simulated failure 1\/1, retry in/);
     expect(log).toMatch(/started\s+\w{8}\s+upload \(attempt 2\)/);
-    expect(log).toContain('› upload');
-    expect(log.indexOf('› backup')).toBeLessThan(log.indexOf('› upload'));
+    expect(log).toContain('↳ output: upload');
+    expect(log.indexOf('output: backup')).toBeLessThan(log.indexOf('output: upload'));
+    // Times include milliseconds, so retry spacing is visible.
+    expect(log).toMatch(/^\d\d:\d\d:\d\d\.\d{3} {2}started/m);
     expect(log).toContain('stopping…');
+  });
+
+  it('prints "runs now" and exact doubling with --jitter none', async () => {
+    const clock = new FakeClock(Date.parse('2026-06-01T00:00:00Z'));
+    const cli = harness({ clock });
+    await cli.run(
+      'add',
+      'upload',
+      '--retries',
+      '2',
+      '--fail-first',
+      '2',
+      '--backoff',
+      '200ms',
+      '--jitter',
+      'none',
+    );
+    expect(cli.out[0]).toMatch(/^added "upload" \([0-9a-f]{8}\), runs now$/);
+    cli.out.length = 0;
+    await runFor(cli, clock, 2000);
+    expect(cli.text()).toContain('simulated failure 1/2, retry in 200ms');
+    expect(cli.text()).toContain('simulated failure 2/2, retry in 400ms');
   });
 
   it('shows missed deadlines, timeouts and the next occurrence', async () => {
@@ -222,7 +247,7 @@ describe('cli: run', () => {
     cli.out.length = 0;
     await runFor(cli, clock, 10_000);
     const log = cli.text();
-    expect(log).toMatch(/missed\s+\w{8}\s+urgent deadline passed .* ago, skip/);
+    expect(log).toMatch(/missed\s+\w{8}\s+urgent missed its deadline by .*, skipped/);
     expect(log).toMatch(/failed\s+\w{8}\s+stuck task timed out after 1000 ms, giving up/);
     expect(log).toMatch(/next\s+\w{8}\s+tick at 2026-06-01/);
   });

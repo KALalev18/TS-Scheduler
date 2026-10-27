@@ -11,7 +11,14 @@ import {
 } from '../scheduler.js';
 import { JsonFileStorage } from '../storage/json-file.js';
 import packageJson from '../../package.json' with { type: 'json' };
-import { formatDuration, formatTime, parseDuration, parseInteger, table } from './format.js';
+import {
+  formatClockTime,
+  formatDuration,
+  formatTime,
+  parseDuration,
+  parseInteger,
+  table,
+} from './format.js';
 import { acquireLock, lockHolder, runningMessage } from './lock.js';
 
 /** The CLI has one task type: print a message. Failures and work time can be simulated for demos. */
@@ -47,6 +54,7 @@ interface AddOptions {
   backoff: string;
   failFirst: string;
   work: string;
+  jitter: 'full' | 'none';
 }
 
 function sleep(clock: Clock, ms: number, signal: AbortSignal): Promise<void> {
@@ -99,7 +107,8 @@ export function createProgram(io: CliIO): Command {
   const createScheduler = (concurrency = 1) => {
     const { file } = program.opts<{ file: string }>();
     const log = (style: Style, label: string, task: TaskSnapshot<CliPayloads>, text = '') => {
-      const time = formatTime(clock.now(), systemZone).slice(11, 19);
+      // Milliseconds make retry and backoff spacing visible.
+      const time = formatClockTime(clock.now(), systemZone);
       const what = task.name ?? task.payload.message;
       io.out(
         `${paint('dim', time)}  ${paint(style, label.padEnd(9))} ${paint('dim', shortId(task.id))}  ${what}${text}`,
@@ -115,7 +124,7 @@ export function createProgram(io: CliIO): Command {
             throw new Error(`simulated failure ${attempt}/${payload.failFirst}`);
           }
           if (payload.workMs > 0) await sleep(clock, payload.workMs, signal);
-          io.out(`          ${paint('bold', '›')} ${payload.message}`);
+          io.out(`          ${paint('dim', '↳ output:')} ${payload.message}`);
         },
       },
     });
@@ -125,14 +134,15 @@ export function createProgram(io: CliIO): Command {
     scheduler.on('taskCompleted', ({ task, durationMs }) => {
       log('green', 'done', task, paint('dim', ` in ${formatDuration(durationMs)}`));
     });
-    scheduler.on('taskFailed', ({ task, error, retryAt }) => {
+    scheduler.on('taskFailed', ({ task, error, retryDelayMs }) => {
       const retry =
-        retryAt === null ? ', giving up' : `, retry in ${formatDuration(retryAt - clock.now())}`;
+        retryDelayMs === null ? ', giving up' : `, retry in ${formatDuration(retryDelayMs)}`;
       log('red', 'failed', task, paint('dim', ` ${error.message}${retry}`));
     });
     scheduler.on('taskMissed', ({ task, deadline, action }) => {
       const late = formatDuration(clock.now() - deadline);
-      log('yellow', 'missed', task, paint('dim', ` deadline passed ${late} ago, ${action}`));
+      const outcome = action === 'skip' ? 'skipped' : 'running it late';
+      log('yellow', 'missed', task, paint('dim', ` missed its deadline by ${late}, ${outcome}`));
     });
     scheduler.on('taskScheduled', ({ task, runAt }) => {
       if (scheduler.isRunning)
@@ -172,6 +182,11 @@ export function createProgram(io: CliIO): Command {
     .option('--timeout <duration>', 'fail an attempt that runs longer than this')
     .option('--retries <n>', 'extra attempts after a failure', '0')
     .option('--backoff <duration>', 'delay before the first retry (doubles each time)', '1s')
+    .addOption(
+      new Option('--jitter <mode>', 'randomise retry delays (full) or use exact doubling (none)')
+        .choices(['full', 'none'])
+        .default('full'),
+    )
     .option('--fail-first <n>', 'simulate failure on the first n attempts', '0')
     .option('--work <duration>', 'simulate work taking this long', '0ms')
     .action(async (message: string, options: AddOptions) => {
@@ -209,13 +224,15 @@ export function createProgram(io: CliIO): Command {
             maxAttempts: parseInteger(options.retries, '--retries') + 1,
             baseDelayMs: parseDuration(options.backoff),
             maxDelayMs: Math.max(60_000, parseDuration(options.backoff)),
+            jitter: options.jitter,
           },
         },
       );
       await scheduler.stop();
-      io.out(
-        `added ${paint('bold', shortId(task.id))}, first run ${formatTime(task.nextRunAt ?? 0, systemZone)}`,
-      );
+      const runAt = task.nextRunAt ?? 0;
+      const when =
+        runAt - clock.now() < 1_000 ? 'runs now' : `first run ${formatTime(runAt, systemZone)}`;
+      io.out(`added ${paint('bold', `"${task.name ?? message}"`)} (${shortId(task.id)}), ${when}`);
     });
 
   program
@@ -310,7 +327,8 @@ export function createProgram(io: CliIO): Command {
   const runUntilStopped = async (scheduler: Scheduler<CliPayloads>, runForMs?: number) => {
     await scheduler.load();
     const pending = scheduler.list().filter((t) => t.state === 'pending').length;
-    io.out(paint('dim', `running ${pending} pending task(s), press Ctrl+C to stop`));
+    const tasks = pending === 1 ? '1 pending task' : `${pending} pending tasks`;
+    io.out(paint('dim', `running ${tasks}, press Ctrl+C to stop`));
     await scheduler.start();
     const stopAfter =
       runForMs === undefined
