@@ -18,30 +18,22 @@ const COMMANDS: string[][] = [
     '-n',
     '4',
   ],
-  ['add', 'nightly backup', '--in', '1s', '--priority', '5', '--work', '1s'],
+  ['add', 'nightly backup', '--priority', '5', '--work', '800ms'],
+  ['add', 'send newsletter', '--deadline', '300ms'],
+  ['add', 'upload report', '--retries', '2', '--fail-first', '2', '--backoff', '200ms'],
+  ['run', '--for', '2s'],
+];
+
+/** Notes shown next to the first output line that matches, to point out what matters. */
+const CAPTIONS: [RegExp, string][] = [
+  [/03:30:00\+02:00/, "← 02:30 doesn't exist on the DST day, so it runs at 03:30"],
+  [/started\s+\w+\s+nightly backup/, '← highest priority runs first'],
+  [/missed\s+\w+\s+send newsletter/, '← waited past its 300 ms deadline, so it is skipped'],
   [
-    'add',
-    'upload report',
-    '--in',
-    '1s',
-    '--retries',
-    '2',
-    '--fail-first',
-    '2',
-    '--backoff',
-    '300ms',
+    /failed\s+\w+\s+upload report simulated failure 1/,
+    '← retried with exponential backoff and jitter',
   ],
-  ['add', 'send newsletter', '--in', '1s', '--deadline', '500ms'],
-  [
-    'add',
-    'standup reminder',
-    '--rrule',
-    'FREQ=WEEKLY;BYDAY=MO,WE,FR;BYHOUR=9;BYMINUTE=30',
-    '--tz',
-    'Europe/Helsinki',
-  ],
-  ['list'],
-  ['run', '--for', '4s'],
+  [/done\s+\w+\s+upload report/, '← succeeded on attempt 3'],
 ];
 
 const quote = (arg: string) => (/[\s;]/.test(arg) ? `"${arg}"` : arg);
@@ -49,6 +41,7 @@ const quote = (arg: string) => (/[\s;]/.test(arg) ? `"${arg}"` : arg);
 interface Line {
   text: string;
   kind: 'prompt' | 'output';
+  caption?: string;
   /** Seconds after the start of the animation when the line appears. */
   at: number;
 }
@@ -60,14 +53,14 @@ async function record(): Promise<Line[]> {
   try {
     for (const args of COMMANDS) {
       lines.push({ text: `$ ts-scheduler ${args.map(quote).join(' ')}`, kind: 'prompt', at });
-      at += 0.9;
+      at += 0.5;
       const started = Date.now();
       const push = (text: string) => {
         for (const line of text.split('\n')) {
           // `run` output appears at the real moment it was printed.
           const offset = args[0] === 'run' ? (Date.now() - started) / 1000 : 0;
           lines.push({ text: line, kind: 'output', at: at + offset });
-          if (args[0] !== 'run') at += 0.08;
+          if (args[0] !== 'run') at += 0.05;
         }
       };
       await runCli(args, {
@@ -77,10 +70,15 @@ async function record(): Promise<Line[]> {
         color: false,
       });
       if (args[0] === 'run') at += (Date.now() - started) / 1000;
-      at += 0.7;
+      at += 0.4;
     }
   } finally {
     await rm(dir, { recursive: true, force: true });
+  }
+  for (const [pattern, caption] of CAPTIONS) {
+    const line = lines.find((l) => l.kind === 'output' && pattern.test(l.text));
+    if (!line) throw new Error(`demo output has no line matching ${String(pattern)}`);
+    line.caption = caption;
   }
   return lines;
 }
@@ -96,6 +94,13 @@ const COLORS: [RegExp, string][] = [
 const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 function renderLine(line: Line): string {
+  const caption = line.caption
+    ? `<tspan fill="#e5c07b" font-style="italic">   ${escape(line.caption)}</tspan>`
+    : '';
+  return renderText(line) + caption;
+}
+
+function renderText(line: Line): string {
   if (line.kind === 'prompt') {
     return `<tspan fill="#61afef">$</tspan><tspan fill="#e6e6e6">${escape(line.text.slice(1))}</tspan>`;
   }
@@ -115,10 +120,12 @@ function render(lines: Line[]): string {
   const charWidth = 7.22;
   const padding = 18;
   const top = 44;
-  const columns = Math.max(...lines.map((l) => l.text.length));
+  const columns = Math.max(
+    ...lines.map((l) => l.text.length + (l.caption ? l.caption.length + 3 : 0)),
+  );
   const width = Math.ceil(columns * charWidth + 2 * padding);
   const height = top + lines.length * lineHeight + padding;
-  const duration = (lines.at(-1)?.at ?? 0) + 4;
+  const duration = (lines.at(-1)?.at ?? 0) + 3;
   const rows = lines
     .map((line, i) => {
       const y = top + (i + 1) * lineHeight - 4;

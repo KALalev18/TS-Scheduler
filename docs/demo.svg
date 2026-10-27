@@ -1,78 +1,62 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1098" height="640" viewBox="0 0 1098 640" role="img" aria-label="ts-scheduler CLI demo">
+<svg xmlns="http://www.w3.org/2000/svg" width="982" height="504" viewBox="0 0 982 504" role="img" aria-label="ts-scheduler CLI demo">
 <style>
 text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;font-size:12px}
-.l{opacity:0;animation-duration:19.9s;animation-iteration-count:infinite;animation-timing-function:step-end}
+.l{opacity:0;animation-duration:9.8s;animation-iteration-count:infinite;animation-timing-function:step-end}
 @media (prefers-reduced-motion:reduce){.l{animation:none;opacity:1}}
 </style>
-<rect width="1098" height="640" rx="8" fill="#282c34"/>
+<rect width="982" height="504" rx="8" fill="#282c34"/>
 <circle cx="20" cy="18" r="6" fill="#ff5f56"/><circle cx="40" cy="18" r="6" fill="#ffbd2e"/><circle cx="60" cy="18" r="6" fill="#27c93f"/>
-<text x="549" y="22" text-anchor="middle" fill="#7f848e">ts-scheduler demo</text>
+<text x="491" y="22" text-anchor="middle" fill="#7f848e">ts-scheduler demo</text>
 <g class="l" style="animation-name:a0"><text x="18" y="57" xml:space="preserve"><tspan fill="#61afef">$</tspan><tspan fill="#e6e6e6"> ts-scheduler next "FREQ=DAILY;BYHOUR=2;BYMINUTE=30" --tz Europe/Berlin --start 2026-03-27T00:00 -n 4</tspan></text></g>
-<style>@keyframes a0{0%,1.51%{opacity:0}1.52%,97%{opacity:1}100%{opacity:0}}</style>
+<style>@keyframes a0{0%,3.05%{opacity:0}3.06%,97%{opacity:1}100%{opacity:0}}</style>
 <g class="l" style="animation-name:a1"><text x="18" y="74" xml:space="preserve"><tspan fill="#c8ccd4">FREQ=DAILY;BYHOUR=2;BYMINUTE=30 in Europe/Berlin</tspan></text></g>
-<style>@keyframes a1{0%,6.02%{opacity:0}6.03%,97%{opacity:1}100%{opacity:0}}</style>
+<style>@keyframes a1{0%,8.14%{opacity:0}8.15%,97%{opacity:1}100%{opacity:0}}</style>
 <g class="l" style="animation-name:a2"><text x="18" y="91" xml:space="preserve"><tspan fill="#c8ccd4">  2026-03-27 02:30:00+01:00</tspan></text></g>
-<style>@keyframes a2{0%,6.42%{opacity:0}6.43%,97%{opacity:1}100%{opacity:0}}</style>
+<style>@keyframes a2{0%,8.65%{opacity:0}8.66%,97%{opacity:1}100%{opacity:0}}</style>
 <g class="l" style="animation-name:a3"><text x="18" y="108" xml:space="preserve"><tspan fill="#c8ccd4">  2026-03-28 02:30:00+01:00</tspan></text></g>
-<style>@keyframes a3{0%,6.83%{opacity:0}6.84%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a4"><text x="18" y="125" xml:space="preserve"><tspan fill="#c8ccd4">  2026-03-29 03:30:00+02:00</tspan></text></g>
-<style>@keyframes a4{0%,7.23%{opacity:0}7.24%,97%{opacity:1}100%{opacity:0}}</style>
+<style>@keyframes a3{0%,9.16%{opacity:0}9.17%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a4"><text x="18" y="125" xml:space="preserve"><tspan fill="#c8ccd4">  2026-03-29 03:30:00+02:00</tspan><tspan fill="#e5c07b" font-style="italic">   ← 02:30 doesn't exist on the DST day, so it runs at 03:30</tspan></text></g>
+<style>@keyframes a4{0%,9.67%{opacity:0}9.68%,97%{opacity:1}100%{opacity:0}}</style>
 <g class="l" style="animation-name:a5"><text x="18" y="142" xml:space="preserve"><tspan fill="#c8ccd4">  2026-03-30 02:30:00+02:00</tspan></text></g>
-<style>@keyframes a5{0%,7.63%{opacity:0}7.64%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a6"><text x="18" y="159" xml:space="preserve"><tspan fill="#61afef">$</tspan><tspan fill="#e6e6e6"> ts-scheduler add "nightly backup" --in 1s --priority 5 --work 1s</tspan></text></g>
-<style>@keyframes a6{0%,11.54%{opacity:0}11.55%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a7"><text x="18" y="176" xml:space="preserve"><tspan fill="#c8ccd4">added 3e05615d, first run 2026-10-27 13:23:31+02:00</tspan></text></g>
-<style>@keyframes a7{0%,16.06%{opacity:0}16.07%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a8"><text x="18" y="193" xml:space="preserve"><tspan fill="#61afef">$</tspan><tspan fill="#e6e6e6"> ts-scheduler add "upload report" --in 1s --retries 2 --fail-first 2 --backoff 300ms</tspan></text></g>
-<style>@keyframes a8{0%,19.97%{opacity:0}19.98%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a9"><text x="18" y="210" xml:space="preserve"><tspan fill="#c8ccd4">added fc26bd7e, first run 2026-10-27 13:23:31+02:00</tspan></text></g>
-<style>@keyframes a9{0%,24.49%{opacity:0}24.50%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a10"><text x="18" y="227" xml:space="preserve"><tspan fill="#61afef">$</tspan><tspan fill="#e6e6e6"> ts-scheduler add "send newsletter" --in 1s --deadline 500ms</tspan></text></g>
-<style>@keyframes a10{0%,28.41%{opacity:0}28.42%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a11"><text x="18" y="244" xml:space="preserve"><tspan fill="#c8ccd4">added 6065933d, first run 2026-10-27 13:23:31+02:00</tspan></text></g>
-<style>@keyframes a11{0%,32.92%{opacity:0}32.93%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a12"><text x="18" y="261" xml:space="preserve"><tspan fill="#61afef">$</tspan><tspan fill="#e6e6e6"> ts-scheduler add "standup reminder" --rrule "FREQ=WEEKLY;BYDAY=MO,WE,FR;BYHOUR=9;BYMINUTE=30" --tz Europe/Helsinki</tspan></text></g>
-<style>@keyframes a12{0%,36.84%{opacity:0}36.85%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a13"><text x="18" y="278" xml:space="preserve"><tspan fill="#c8ccd4">added ca9e9ffe, first run 2026-10-28 09:30:00+02:00</tspan></text></g>
-<style>@keyframes a13{0%,41.35%{opacity:0}41.36%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a14"><text x="18" y="295" xml:space="preserve"><tspan fill="#61afef">$</tspan><tspan fill="#e6e6e6"> ts-scheduler list</tspan></text></g>
-<style>@keyframes a14{0%,45.27%{opacity:0}45.28%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a15"><text x="18" y="312" xml:space="preserve"><tspan fill="#c8ccd4">ID        TASK              STATE    PRI  NEXT RUN                   RUNS  FAILS  SCHEDULE</tspan></text></g>
-<style>@keyframes a15{0%,49.78%{opacity:0}49.79%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a16"><text x="18" y="329" xml:space="preserve"><tspan fill="#c8ccd4">3e05615d  nightly backup    pending  5    2026-10-27 13:23:31+02:00  0     0      once at 2026-10-27 13:23:31+02:00</tspan></text></g>
-<style>@keyframes a16{0%,50.19%{opacity:0}50.20%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a17"><text x="18" y="346" xml:space="preserve"><tspan fill="#c8ccd4">fc26bd7e  upload report     pending  0    2026-10-27 13:23:31+02:00  0     0      once at 2026-10-27 13:23:31+02:00</tspan></text></g>
-<style>@keyframes a17{0%,50.59%{opacity:0}50.60%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a18"><text x="18" y="363" xml:space="preserve"><tspan fill="#c8ccd4">6065933d  send newsletter   pending  0    2026-10-27 13:23:31+02:00  0     0      once at 2026-10-27 13:23:31+02:00</tspan></text></g>
-<style>@keyframes a18{0%,50.99%{opacity:0}51.00%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a19"><text x="18" y="380" xml:space="preserve"><tspan fill="#c8ccd4">ca9e9ffe  standup reminder  pending  0    2026-10-28 09:30:00+02:00  0     0      FREQ=WEEKLY;BYDAY=MO,WE,FR;BYHOUR=9;BYMINUTE=30 (Europe/Helsinki)</tspan></text></g>
-<style>@keyframes a19{0%,51.39%{opacity:0}51.40%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a20"><text x="18" y="397" xml:space="preserve"><tspan fill="#61afef">$</tspan><tspan fill="#e6e6e6"> ts-scheduler run --for 4s</tspan></text></g>
-<style>@keyframes a20{0%,55.30%{opacity:0}55.31%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a21"><text x="18" y="414" xml:space="preserve"><tspan fill="#c8ccd4">running 4 pending task(s), press Ctrl+C to stop</tspan></text></g>
-<style>@keyframes a21{0%,59.85%{opacity:0}59.86%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a22"><text x="18" y="431" xml:space="preserve"><tspan fill="#7f848e">13:23:31  </tspan><tspan fill="#56b6c2">started</tspan><tspan fill="#c8ccd4">   3e05615d  nightly backup</tspan></text></g>
-<style>@keyframes a22{0%,64.45%{opacity:0}64.46%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a23"><text x="18" y="448" xml:space="preserve"><tspan fill="#c8ccd4">          › nightly backup</tspan></text></g>
-<style>@keyframes a23{0%,69.50%{opacity:0}69.51%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a24"><text x="18" y="465" xml:space="preserve"><tspan fill="#7f848e">13:23:32  </tspan><tspan fill="#98c379">done</tspan><tspan fill="#c8ccd4">      3e05615d  nightly backup in 1s</tspan></text></g>
-<style>@keyframes a24{0%,69.51%{opacity:0}69.52%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a25"><text x="18" y="482" xml:space="preserve"><tspan fill="#7f848e">13:23:32  </tspan><tspan fill="#e5c07b">missed</tspan><tspan fill="#c8ccd4">    6065933d  send newsletter deadline passed 465ms ago, skip</tspan></text></g>
-<style>@keyframes a25{0%,69.51%{opacity:0}69.52%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a26"><text x="18" y="499" xml:space="preserve"><tspan fill="#7f848e">13:23:32  </tspan><tspan fill="#56b6c2">started</tspan><tspan fill="#c8ccd4">   fc26bd7e  upload report</tspan></text></g>
-<style>@keyframes a26{0%,69.51%{opacity:0}69.52%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a27"><text x="18" y="516" xml:space="preserve"><tspan fill="#7f848e">13:23:32  </tspan><tspan fill="#e06c75">failed</tspan><tspan fill="#c8ccd4">    fc26bd7e  upload report simulated failure 1/2, retry in 44ms</tspan></text></g>
-<style>@keyframes a27{0%,69.52%{opacity:0}69.53%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a28"><text x="18" y="533" xml:space="preserve"><tspan fill="#7f848e">13:23:32  </tspan><tspan fill="#56b6c2">started</tspan><tspan fill="#c8ccd4">   fc26bd7e  upload report (attempt 2)</tspan></text></g>
-<style>@keyframes a28{0%,69.85%{opacity:0}69.86%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a29"><text x="18" y="550" xml:space="preserve"><tspan fill="#7f848e">13:23:32  </tspan><tspan fill="#e06c75">failed</tspan><tspan fill="#c8ccd4">    fc26bd7e  upload report simulated failure 2/2, retry in 500ms</tspan></text></g>
-<style>@keyframes a29{0%,69.86%{opacity:0}69.87%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a30"><text x="18" y="567" xml:space="preserve"><tspan fill="#7f848e">13:23:33  </tspan><tspan fill="#56b6c2">started</tspan><tspan fill="#c8ccd4">   fc26bd7e  upload report (attempt 3)</tspan></text></g>
-<style>@keyframes a30{0%,72.41%{opacity:0}72.42%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a31"><text x="18" y="584" xml:space="preserve"><tspan fill="#c8ccd4">          › upload report</tspan></text></g>
-<style>@keyframes a31{0%,72.41%{opacity:0}72.42%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a32"><text x="18" y="601" xml:space="preserve"><tspan fill="#7f848e">13:23:33  </tspan><tspan fill="#98c379">done</tspan><tspan fill="#c8ccd4">      fc26bd7e  upload report in 1ms</tspan></text></g>
-<style>@keyframes a32{0%,72.41%{opacity:0}72.42%,97%{opacity:1}100%{opacity:0}}</style>
-<g class="l" style="animation-name:a33"><text x="18" y="618" xml:space="preserve"><tspan fill="#c8ccd4">stopping…</tspan></text></g>
-<style>@keyframes a33{0%,79.93%{opacity:0}79.94%,97%{opacity:1}100%{opacity:0}}</style>
+<style>@keyframes a5{0%,10.18%{opacity:0}10.19%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a6"><text x="18" y="159" xml:space="preserve"><tspan fill="#61afef">$</tspan><tspan fill="#e6e6e6"> ts-scheduler add "nightly backup" --priority 5 --work 800ms</tspan></text></g>
+<style>@keyframes a6{0%,14.76%{opacity:0}14.77%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a7"><text x="18" y="176" xml:space="preserve"><tspan fill="#c8ccd4">added f4876ba9, first run 2026-10-27 14:46:07+02:00</tspan></text></g>
+<style>@keyframes a7{0%,19.85%{opacity:0}19.86%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a8"><text x="18" y="193" xml:space="preserve"><tspan fill="#61afef">$</tspan><tspan fill="#e6e6e6"> ts-scheduler add "send newsletter" --deadline 300ms</tspan></text></g>
+<style>@keyframes a8{0%,24.43%{opacity:0}24.44%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a9"><text x="18" y="210" xml:space="preserve"><tspan fill="#c8ccd4">added 85fa8e05, first run 2026-10-27 14:46:07+02:00</tspan></text></g>
+<style>@keyframes a9{0%,29.52%{opacity:0}29.53%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a10"><text x="18" y="227" xml:space="preserve"><tspan fill="#61afef">$</tspan><tspan fill="#e6e6e6"> ts-scheduler add "upload report" --retries 2 --fail-first 2 --backoff 200ms</tspan></text></g>
+<style>@keyframes a10{0%,34.10%{opacity:0}34.11%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a11"><text x="18" y="244" xml:space="preserve"><tspan fill="#c8ccd4">added a4a9d8e4, first run 2026-10-27 14:46:07+02:00</tspan></text></g>
+<style>@keyframes a11{0%,39.19%{opacity:0}39.20%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a12"><text x="18" y="261" xml:space="preserve"><tspan fill="#61afef">$</tspan><tspan fill="#e6e6e6"> ts-scheduler run --for 2s</tspan></text></g>
+<style>@keyframes a12{0%,43.77%{opacity:0}43.78%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a13"><text x="18" y="278" xml:space="preserve"><tspan fill="#c8ccd4">running 3 pending task(s), press Ctrl+C to stop</tspan></text></g>
+<style>@keyframes a13{0%,48.98%{opacity:0}48.99%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a14"><text x="18" y="295" xml:space="preserve"><tspan fill="#7f848e">14:46:07  </tspan><tspan fill="#56b6c2">started</tspan><tspan fill="#c8ccd4">   f4876ba9  nightly backup</tspan><tspan fill="#e5c07b" font-style="italic">   ← highest priority runs first</tspan></text></g>
+<style>@keyframes a14{0%,48.99%{opacity:0}49.00%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a15"><text x="18" y="312" xml:space="preserve"><tspan fill="#c8ccd4">          › nightly backup</tspan></text></g>
+<style>@keyframes a15{0%,57.17%{opacity:0}57.18%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a16"><text x="18" y="329" xml:space="preserve"><tspan fill="#7f848e">14:46:08  </tspan><tspan fill="#98c379">done</tspan><tspan fill="#c8ccd4">      f4876ba9  nightly backup in 803ms</tspan></text></g>
+<style>@keyframes a16{0%,57.18%{opacity:0}57.19%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a17"><text x="18" y="346" xml:space="preserve"><tspan fill="#7f848e">14:46:08  </tspan><tspan fill="#e5c07b">missed</tspan><tspan fill="#c8ccd4">    85fa8e05  send newsletter deadline passed 535ms ago, skip</tspan><tspan fill="#e5c07b" font-style="italic">   ← waited past its 300 ms deadline, so it is skipped</tspan></text></g>
+<style>@keyframes a17{0%,57.19%{opacity:0}57.20%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a18"><text x="18" y="363" xml:space="preserve"><tspan fill="#7f848e">14:46:08  </tspan><tspan fill="#56b6c2">started</tspan><tspan fill="#c8ccd4">   a4a9d8e4  upload report</tspan></text></g>
+<style>@keyframes a18{0%,57.19%{opacity:0}57.20%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a19"><text x="18" y="380" xml:space="preserve"><tspan fill="#7f848e">14:46:08  </tspan><tspan fill="#e06c75">failed</tspan><tspan fill="#c8ccd4">    a4a9d8e4  upload report simulated failure 1/2, retry in 27ms</tspan><tspan fill="#e5c07b" font-style="italic">   ← retried with exponential backoff and jitter</tspan></text></g>
+<style>@keyframes a19{0%,57.21%{opacity:0}57.22%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a20"><text x="18" y="397" xml:space="preserve"><tspan fill="#7f848e">14:46:08  </tspan><tspan fill="#56b6c2">started</tspan><tspan fill="#c8ccd4">   a4a9d8e4  upload report (attempt 2)</tspan></text></g>
+<style>@keyframes a20{0%,57.48%{opacity:0}57.49%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a21"><text x="18" y="414" xml:space="preserve"><tspan fill="#7f848e">14:46:08  </tspan><tspan fill="#e06c75">failed</tspan><tspan fill="#c8ccd4">    a4a9d8e4  upload report simulated failure 2/2, retry in 303ms</tspan></text></g>
+<style>@keyframes a21{0%,57.49%{opacity:0}57.50%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a22"><text x="18" y="431" xml:space="preserve"><tspan fill="#7f848e">14:46:08  </tspan><tspan fill="#56b6c2">started</tspan><tspan fill="#c8ccd4">   a4a9d8e4  upload report (attempt 3)</tspan></text></g>
+<style>@keyframes a22{0%,60.70%{opacity:0}60.71%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a23"><text x="18" y="448" xml:space="preserve"><tspan fill="#c8ccd4">          › upload report</tspan></text></g>
+<style>@keyframes a23{0%,60.70%{opacity:0}60.71%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a24"><text x="18" y="465" xml:space="preserve"><tspan fill="#7f848e">14:46:08  </tspan><tspan fill="#98c379">done</tspan><tspan fill="#c8ccd4">      a4a9d8e4  upload report in 0ms</tspan><tspan fill="#e5c07b" font-style="italic">   ← succeeded on attempt 3</tspan></text></g>
+<style>@keyframes a24{0%,60.70%{opacity:0}60.71%,97%{opacity:1}100%{opacity:0}}</style>
+<g class="l" style="animation-name:a25"><text x="18" y="482" xml:space="preserve"><tspan fill="#c8ccd4">stopping…</tspan></text></g>
+<style>@keyframes a25{0%,69.46%{opacity:0}69.47%,97%{opacity:1}100%{opacity:0}}</style>
 </svg>
