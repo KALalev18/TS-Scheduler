@@ -6,7 +6,8 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.ts'],
-      exclude: ['src/cli/main.ts'],
+      // Entry points with no logic of their own: index.ts only re-exports.
+      exclude: ['src/cli/main.ts', 'src/index.ts'],
       reporter: ['text', 'json-summary', 'html'],
       thresholds: { lines: 90, functions: 90, branches: 85, statements: 90 },
     },
