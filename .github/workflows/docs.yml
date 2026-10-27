@@ -14,6 +14,8 @@ concurrency:
 
 jobs:
   build:
+    # GitHub Pages is not available for this repo while it is private.
+    if: ${{ !github.event.repository.private }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
