@@ -18,20 +18,31 @@ const COMMANDS: string[][] = [
     '-n',
     '4',
   ],
-  ['add', 'nightly backup', '--priority', '5', '--work', '800ms'],
+  ['add', 'database backup', '--priority', '5', '--work', '800ms'],
   ['add', 'send newsletter', '--deadline', '300ms'],
-  ['add', 'upload report', '--retries', '2', '--fail-first', '2', '--backoff', '200ms'],
+  [
+    'add',
+    'upload report',
+    '--retries',
+    '2',
+    '--fail-first',
+    '2',
+    '--backoff',
+    '200ms',
+    '--jitter',
+    'none',
+  ],
   ['run', '--for', '2s'],
 ];
 
 /** Notes shown next to the first output line that matches, to point out what matters. */
 const CAPTIONS: [RegExp, string][] = [
   [/03:30:00\+02:00/, "← 02:30 doesn't exist on the DST day, so it runs at 03:30"],
-  [/started\s+\w+\s+nightly backup/, '← highest priority runs first'],
-  [/missed\s+\w+\s+send newsletter/, '← waited past its 300 ms deadline, so it is skipped'],
+  [/started\s+\w+\s+database backup/, '← highest priority runs first'],
+  [/missed\s+\w+\s+send newsletter/, '← waited behind the backup for too long'],
   [
     /failed\s+\w+\s+upload report simulated failure 1/,
-    '← retried with exponential backoff and jitter',
+    '← retry delay doubles: 200 ms, then 400 ms',
   ],
   [/done\s+\w+\s+upload report/, '← succeeded on attempt 3'],
 ];
@@ -84,11 +95,11 @@ async function record(): Promise<Line[]> {
 }
 
 const COLORS: [RegExp, string][] = [
-  [/^\d\d:\d\d:\d\d {2}(started)/, '#56b6c2'],
-  [/^\d\d:\d\d:\d\d {2}(done)/, '#98c379'],
-  [/^\d\d:\d\d:\d\d {2}(failed)/, '#e06c75'],
-  [/^\d\d:\d\d:\d\d {2}(missed)/, '#e5c07b'],
-  [/^\d\d:\d\d:\d\d {2}(next)/, '#c678dd'],
+  [/^[\d:.]{12} {2}(started)/, '#56b6c2'],
+  [/^[\d:.]{12} {2}(done)/, '#98c379'],
+  [/^[\d:.]{12} {2}(failed)/, '#e06c75'],
+  [/^[\d:.]{12} {2}(missed)/, '#e5c07b'],
+  [/^[\d:.]{12} {2}(next)/, '#c678dd'],
 ];
 
 const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

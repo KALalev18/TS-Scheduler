@@ -108,7 +108,7 @@ ts-scheduler next "FREQ=DAILY;BYHOUR=2;BYMINUTE=30" --tz Europe/Berlin --start 2
 # Add tasks: one-off, recurring, with priority / deadline / timeout / retries
 ts-scheduler add "nightly backup" --in 10s --priority 5
 ts-scheduler add "standup" --rrule "FREQ=WEEKLY;BYDAY=MO,WE,FR;BYHOUR=9;BYMINUTE=30" --tz Europe/Helsinki
-ts-scheduler add "flaky upload" --in 5s --retries 2 --fail-first 2 --backoff 500ms
+ts-scheduler add "flaky upload" --in 5s --retries 2 --fail-first 2 --backoff 500ms --jitter none
 
 ts-scheduler list               # soonest first
 ts-scheduler run                # Ctrl+C stops gracefully, a second Ctrl+C aborts running tasks
@@ -191,7 +191,7 @@ The "sorted array" baseline uses binary-search insert plus `splice`, the fastest
 ## Tests
 
 ```bash
-npm test            # 151 tests
+npm test            # 152 tests
 npm run coverage    # same, with v8 coverage
 npm run check       # lint + format + typecheck + coverage + build (what CI runs)
 ```
@@ -199,7 +199,7 @@ npm run check       # lint + format + typecheck + coverage + build (what CI runs
 - **Property-based tests** (fast-check): the heap always drains as a stable sort; interleaved push/pop always returns the minimum; `next()` always matches the independent reference implementation; iterating a rule never skips or duplicates occurrences across DST; a daily wall-clock rule fires exactly once per local day for 400 days; intraday rules are evenly spaced; the backoff delay is always within bounds.
 - **Scheduler tests** use `FakeClock`, so retries, timeouts, deadlines and multi-day recurrence run instantly and deterministically.
 - **Compile-time tests**: `@ts-expect-error` and `expectTypeOf` check that wrong payloads, unknown task types, unknown events and invalid state transitions do not compile. `npm run typecheck` enforces them.
-- **Coverage** (`npm run coverage`): 98.9% lines, 98.5% statements, 95.0% branches, 99.0% functions. CI fails below 90/85%. The two entry files with no logic of their own (`src/index.ts`, `src/cli/main.ts`) are excluded.
+- **Coverage** (`npm run coverage`): 98.9% lines, 98.5% statements, 94.9% branches, 99.0% functions. CI fails below 90/85%. The two entry files with no logic of their own (`src/index.ts`, `src/cli/main.ts`) are excluded.
 
 ## Project structure
 
