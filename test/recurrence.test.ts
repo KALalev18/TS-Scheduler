@@ -117,6 +117,11 @@ describe('Recurrence', () => {
     expect(rec.toString()).toBe('FREQ=DAILY;BYHOUR=9;BYMINUTE=0');
   });
 
+  it('runs at second 0 when BYHOUR or BYMINUTE is given', () => {
+    const rec = Recurrence.parse('FREQ=DAILY;BYMINUTE=30', '2026-06-01T07:12:45', 'UTC');
+    expect(localTimes(rec, 1)).toEqual(['2026-06-01T07:30:00+00:00']);
+  });
+
   it('takes the time of day from the start when BYHOUR/BYMINUTE are absent', () => {
     const rec = Recurrence.parse('FREQ=DAILY;INTERVAL=3', '2026-06-01T07:45:30', 'UTC');
     expect(localTimes(rec, 2)).toEqual(['2026-06-01T07:45:30+00:00', '2026-06-04T07:45:30+00:00']);
@@ -328,6 +333,7 @@ function* referenceOccurrences(
   const startMonday = startDate.subtract({ days: startDate.dayOfWeek - 1 });
   const hours = rule.byHour ?? [start.hour];
   const minutes = rule.byMinute ?? [start.minute];
+  const second = rule.byHour || rule.byMinute ? 0 : start.second;
   const toDate = (ms: number) =>
     Temporal.Instant.fromEpochMilliseconds(ms).toZonedDateTimeISO(rec.timeZone).toPlainDate();
   const fromDate = toDate(Math.max(fromMs, start.epochMilliseconds)).subtract({ days: 1 });
@@ -360,7 +366,7 @@ function* referenceOccurrences(
         (minute) =>
           day.toZonedDateTime({
             timeZone: rec.timeZone,
-            plainTime: { hour, minute, second: start.second },
+            plainTime: { hour, minute, second },
           }).epochMilliseconds,
       ),
     );

@@ -228,6 +228,8 @@ export function resolveStart(start: StartInput, timeZone?: string): Temporal.Zon
  *   "every hour" is always 60 minutes apart and DST never skips or doubles a run.
  * - Occurrences before `start` are never produced; `start` itself is only an
  *   occurrence if it matches the rule.
+ * - With `BYHOUR` or `BYMINUTE`, occurrences fall on second 0; otherwise the
+ *   time of day (including seconds) comes from `start`.
  */
 export class Recurrence {
   readonly start: Temporal.ZonedDateTime;
@@ -246,8 +248,11 @@ export class Recurrence {
     this.startMonday = this.startDate.subtract({ days: this.startDate.dayOfWeek - 1 });
     const hours = rule.byHour ?? [this.start.hour];
     const minutes = rule.byMinute ?? [this.start.minute];
+    // An explicit time of day ("BYHOUR=9;BYMINUTE=30") means 09:30:00, not the
+    // seconds of whenever the task was created.
+    const second = rule.byHour || rule.byMinute ? 0 : this.start.second;
     this.times = hours.flatMap((hour) =>
-      minutes.map((minute) => new Temporal.PlainTime(hour, minute, this.start.second)),
+      minutes.map((minute) => new Temporal.PlainTime(hour, minute, second)),
     );
   }
 
