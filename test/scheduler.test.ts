@@ -263,14 +263,14 @@ describe('Scheduler: retries and timeouts', () => {
       { delayMs: 0 },
       { retry: { maxAttempts: 2, baseDelayMs: 1000 } },
     );
-    const retryAt = new Promise<number | null>((resolve) =>
+    const retry = new Promise<{ at: number | null; delay: number | null }>((resolve) =>
       scheduler.once('taskFailed', (e) => {
-        resolve(e.retryAt);
+        resolve({ at: e.retryAt, delay: e.retryDelayMs });
       }),
     );
     await scheduler.start();
     await clock.advance(0);
-    expect(await retryAt).toBe(T0 + 500); // random() = 0.5
+    expect(await retry).toEqual({ at: T0 + 500, delay: 500 }); // random() = 0.5
   });
 
   it('marks the task failed when attempts run out', async () => {

@@ -79,7 +79,15 @@ export interface SchedulerEvents<P extends PayloadMap<P>> {
   taskScheduled: { task: TaskSnapshot<P>; runAt: number };
   taskStarted: { task: TaskSnapshot<P>; attempt: number };
   taskCompleted: { task: TaskSnapshot<P>; durationMs: number };
-  taskFailed: { task: TaskSnapshot<P>; error: Error; willRetry: boolean; retryAt: number | null };
+  taskFailed: {
+    task: TaskSnapshot<P>;
+    error: Error;
+    willRetry: boolean;
+    /** When the retry is due (epoch ms), or `null` if the task gave up. */
+    retryAt: number | null;
+    /** The backoff delay that was chosen, or `null` if the task gave up. */
+    retryDelayMs: number | null;
+  };
   taskMissed: {
     task: TaskSnapshot<P>;
     scheduledAt: number;
@@ -559,10 +567,11 @@ export class Scheduler<P extends PayloadMap<P>> {
       this.enqueue(task);
     } else {
       data.lastError = error.message;
-      const retryAt =
+      const retryDelayMs =
         data.attempt < data.retry.maxAttempts
-          ? now + backoffDelay(data.retry, data.attempt, this.random)
+          ? backoffDelay(data.retry, data.attempt, this.random)
           : null;
+      const retryAt = retryDelayMs === null ? null : now + retryDelayMs;
       if (retryAt !== null) {
         this.setState(task, 'pending');
         data.nextRunAt = retryAt;
@@ -576,6 +585,7 @@ export class Scheduler<P extends PayloadMap<P>> {
         error,
         willRetry: retryAt !== null,
         retryAt,
+        retryDelayMs,
       }));
       if (retryAt === null) this.scheduleNextOccurrence(task, now);
     }
