@@ -89,8 +89,11 @@ describe('resolveStart', () => {
     expect(resolveStart(Temporal.ZonedDateTime.from('2026-06-01T09:00[UTC]'), tz).hour).toBe(12);
   });
 
-  it('uses the system time zone by default', () => {
+  it('uses the system time zone by default, but keeps an explicit zone', () => {
     expect(resolveStart('2026-06-01T09:00').timeZoneId).toBe(Temporal.Now.timeZoneId());
+    expect(resolveStart('2026-06-01T09:00:00+02:00[Europe/Berlin]').toString()).toBe(
+      '2026-06-01T09:00:00+02:00[Europe/Berlin]',
+    );
   });
 
   it('reports invalid input as RecurrenceError', () => {

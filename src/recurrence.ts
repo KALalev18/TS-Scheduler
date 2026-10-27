@@ -186,25 +186,30 @@ function wrapRangeError<T>(fn: () => T): T {
 
 /**
  * Turns a start input into a zoned date-time.
+ * - `ZonedDateTime` / strings with a `[Zone/Id]` suffix: kept in their own zone,
+ *   or converted to `timeZone` if one is given.
  * - `Date` / epoch ms / strings with `Z` or an offset: an exact instant, shown in `timeZone`.
- * - Strings with a `[Zone/Id]` suffix: a zoned date-time, converted to `timeZone` if given.
  * - Other strings (`2026-03-29T02:30`): local wall time in `timeZone`.
+ *
+ * `timeZone` defaults to the system time zone.
  */
-export function resolveStart(
-  start: StartInput,
-  timeZone: string = Temporal.Now.timeZoneId(),
-): Temporal.ZonedDateTime {
+export function resolveStart(start: StartInput, timeZone?: string): Temporal.ZonedDateTime {
   return wrapRangeError(() => {
-    if (start instanceof Temporal.ZonedDateTime) return start.withTimeZone(timeZone);
+    const zone = timeZone ?? Temporal.Now.timeZoneId();
+    if (typeof start === 'string' && start.includes('[')) {
+      start = Temporal.ZonedDateTime.from(start);
+    }
+    if (start instanceof Temporal.ZonedDateTime) {
+      return timeZone === undefined ? start : start.withTimeZone(timeZone);
+    }
     if (typeof start === 'number' || start instanceof Date) {
       const ms = typeof start === 'number' ? start : start.getTime();
-      return Temporal.Instant.fromEpochMilliseconds(ms).toZonedDateTimeISO(timeZone);
+      return Temporal.Instant.fromEpochMilliseconds(ms).toZonedDateTimeISO(zone);
     }
-    if (start.includes('[')) return Temporal.ZonedDateTime.from(start).withTimeZone(timeZone);
     if (/(Z|[+-]\d{2}:?\d{2})$/i.test(start)) {
-      return Temporal.Instant.from(start).toZonedDateTimeISO(timeZone);
+      return Temporal.Instant.from(start).toZonedDateTimeISO(zone);
     }
-    return Temporal.PlainDateTime.from(start).toZonedDateTime(timeZone);
+    return Temporal.PlainDateTime.from(start).toZonedDateTime(zone);
   });
 }
 
