@@ -39,7 +39,7 @@ jobs:
         run: npm run coverage
       - run: npm run build
       - name: CLI smoke test
-        run: node dist/cli.js next "FREQ=DAILY;BYHOUR=2;BYMINUTE=30" --tz Europe/Berlin --start 2026-03-27T00:00 -n 3
+        run: node dist/cli.js next "FREQ=DAILY;BYHOUR=2;BYMINUTE=30" --tz Europe/Berlin --start 2027-03-26T00:00 -n 3
       - name: Check package contents
         run: npm pack --dry-run
       - name: Coverage summary

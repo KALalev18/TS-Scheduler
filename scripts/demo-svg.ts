@@ -14,7 +14,7 @@ const COMMANDS: string[][] = [
     '--tz',
     'Europe/Berlin',
     '--start',
-    '2026-03-27T00:00',
+    '2027-03-26T00:00',
     '-n',
     '4',
   ],

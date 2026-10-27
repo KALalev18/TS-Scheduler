@@ -103,7 +103,7 @@ Payload types can also be inferred from annotated handlers (`handlers: { email: 
 
 ```bash
 # Preview a rule without saving anything (note 03:30 on the DST day)
-ts-scheduler next "FREQ=DAILY;BYHOUR=2;BYMINUTE=30" --tz Europe/Berlin --start 2026-03-27T00:00 -n 4
+ts-scheduler next "FREQ=DAILY;BYHOUR=2;BYMINUTE=30" --tz Europe/Berlin --start 2027-03-26T00:00 -n 4
 
 # Add tasks: one-off, recurring, with priority / deadline / timeout / retries
 ts-scheduler add "nightly backup" --in 10s --priority 5
@@ -138,8 +138,8 @@ Cancelling or rescheduling a task does not search the heap. Each task has a `tok
 | Situation                                                                               | Behaviour                                                                                                                   |
 | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
 | `DAILY` / `WEEKLY` / `MONTHLY`                                                          | Follow wall-clock time: 09:00 stays 09:00 local time across DST.                                                            |
-| Wall-clock time in a spring-forward gap (02:30 in Berlin on 29 Mar 2026)                | Runs at **03:30**, shifted forward by the gap. This matches RFC 5545 and Temporal's `'compatible'` disambiguation.          |
-| Wall-clock time that happens twice (02:30 on 25 Oct 2026)                               | Runs **once**, at the first 02:30 (`+02:00`).                                                                               |
+| Wall-clock time in a spring-forward gap (02:30 in Berlin on 28 Mar 2027)                | Runs at **03:30**, shifted forward by the gap. This matches RFC 5545 and Temporal's `'compatible'` disambiguation.          |
+| Wall-clock time that happens twice (02:30 on 31 Oct 2027)                               | Runs **once**, at the first 02:30 (`+02:00`).                                                                               |
 | Two rule times collapse onto the same instant (`BYHOUR=2,3;BYMINUTE=30` on the gap day) | Runs once; occurrences are strictly increasing.                                                                             |
 | `MINUTELY` / `HOURLY`                                                                   | Step in exact elapsed time from the start, so "every hour" is always 60 minutes apart and DST never skips or doubles a run. |
 | `BYMONTHDAY=31` in a 30-day month                                                       | Skipped, as RFC 5545 specifies; use `-1` for "last day of the month".                                                       |
