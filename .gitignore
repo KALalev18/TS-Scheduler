@@ -11,3 +11,9 @@ schedule.json.lock
 *.tmp
 .DS_Store
 Thumbs.db
+
+# Editors, logs and profiler output
+.vscode/
+.idea/
+*.log
+*.cpuprofile
