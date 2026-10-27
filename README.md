@@ -238,4 +238,4 @@ API reference: generated with `npm run docs` (TypeDoc) and published to GitHub P
 
 ## License
 
-[MIT](LICENSE) © 2025 Kristian Lalev
+[MIT](LICENSE) © 2026 Kristian Lalev
