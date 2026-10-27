@@ -563,13 +563,40 @@ describe('Scheduler: persistence and lifecycle', () => {
   it('reports storage failures as error events instead of crashing', async () => {
     const failing: StorageAdapter = {
       load: () => Promise.resolve([]),
-      save: () => Promise.reject(new Error('disk full')),
+      write: () => Promise.reject(new Error('disk full')),
     };
     const { scheduler } = setup({ storage: failing });
     const errors: string[] = [];
     scheduler.on('error', (e) => errors.push(e.error.message));
     await scheduler.add('job', { label: 'x' }, { delayMs: 0 });
     expect(errors).toContain('disk full');
+  });
+
+  it('batches changes into few storage writes that only carry changed tasks', async () => {
+    const storage = new MemoryStorage();
+    const writes: number[] = [];
+    const spy: StorageAdapter = {
+      load: () => storage.load(),
+      write: (changes) => {
+        writes.push(changes.upserts.length);
+        return storage.write(changes);
+      },
+    };
+    const { scheduler, clock } = setup({ storage: spy, concurrency: 100 });
+    await Promise.all(
+      Array.from({ length: 100 }, (_, i) =>
+        scheduler.add('job', { label: String(i) }, { delayMs: 1000 }),
+      ),
+    );
+    // 100 adds made in the same turn are coalesced into a single write of 100 tasks.
+    expect(writes).toEqual([100]);
+    await scheduler.start();
+    await clock.advance(1000);
+    await scheduler.idle();
+    expect(storage.snapshot().every((t) => t.state === 'done')).toBe(true);
+    // Each later write carries at most the 100 tasks, never more.
+    expect(Math.max(...writes)).toBe(100);
+    expect(writes.length).toBeLessThan(10);
   });
 
   it('reports listener exceptions as error events', async () => {

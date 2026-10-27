@@ -201,6 +201,9 @@ export class Scheduler<P extends PayloadMap<P>> {
   private cancelTimer: CancelTimer | undefined;
   private timerAt: number | undefined;
   private saves: Promise<void> = Promise.resolve();
+  private queuedWrite: Promise<void> | undefined;
+  private readonly dirty = new Set<string>();
+  private readonly deleted = new Set<string>();
 
   constructor(options: SchedulerOptions<P>) {
     this.handlers = options.handlers;
@@ -329,7 +332,7 @@ export class Scheduler<P extends PayloadMap<P>> {
     this.enqueue(task);
     this.emit('taskScheduled', { task: this.snapshot(task), runAt: firstRun });
     if (options.signal) this.attachSignal(task, options.signal);
-    const saved = this.save();
+    const saved = this.save(id);
     this.pump();
     await saved;
     return this.snapshot(task);
@@ -348,7 +351,7 @@ export class Scheduler<P extends PayloadMap<P>> {
     task.detachSignal?.();
     this.running.get(id)?.abort(new TaskCancelledError());
     this.emit('taskCancelled', { task: this.snapshot(task) });
-    await this.save();
+    await this.save(id);
     return true;
   }
 
@@ -361,7 +364,7 @@ export class Scheduler<P extends PayloadMap<P>> {
     task.detachSignal?.();
     this.running.get(id)?.abort(new TaskCancelledError('task was removed'));
     this.tasks.delete(id);
-    await this.save();
+    await this.save(id, true);
     return true;
   }
 
@@ -465,7 +468,7 @@ export class Scheduler<P extends PayloadMap<P>> {
           data.misses++;
           data.nextRunAt = null;
           this.scheduleNextOccurrence(task, now);
-          void this.save();
+          void this.save(data.id);
           return;
         }
       }
@@ -477,7 +480,7 @@ export class Scheduler<P extends PayloadMap<P>> {
     const controller = new AbortController();
     this.running.set(data.id, controller);
     this.emit('taskStarted', { task: this.snapshot(task), attempt: data.attempt });
-    void this.save();
+    void this.save(data.id);
     const run = this.execute(task, controller, scheduledAt).finally(() => {
       this.inflight.delete(run);
     });
@@ -568,7 +571,7 @@ export class Scheduler<P extends PayloadMap<P>> {
       });
       if (retryAt === null) this.scheduleNextOccurrence(task, now);
     }
-    void this.save();
+    void this.save(data.id);
     this.pump();
   }
 
@@ -625,14 +628,38 @@ export class Scheduler<P extends PayloadMap<P>> {
     };
   }
 
-  private save(): Promise<void> {
-    const snapshot = [...this.tasks.values()].map((task) => structuredClone(task.data));
-    this.saves = this.saves
-      .then(() => this.storage.save(snapshot))
-      .catch((error: unknown) => {
-        this.emit('error', { error: toError(error) });
-      });
-    return this.saves;
+  /**
+   * Records that a task changed (or was removed) and schedules a storage write.
+   * Writes run one at a time; every change made before a write starts is
+   * coalesced into it, and a write only carries the tasks that changed.
+   */
+  private save(id: string, removed = false): Promise<void> {
+    if (removed) {
+      this.dirty.delete(id);
+      this.deleted.add(id);
+    } else {
+      this.deleted.delete(id);
+      this.dirty.add(id);
+    }
+    this.queuedWrite ??= this.saves.then(() => this.flush());
+    this.saves = this.queuedWrite;
+    return this.queuedWrite;
+  }
+
+  private async flush(): Promise<void> {
+    this.queuedWrite = undefined;
+    const upserts = [...this.dirty].flatMap((id) => {
+      const task = this.tasks.get(id);
+      return task ? [structuredClone(task.data)] : [];
+    });
+    const deletes = [...this.deleted];
+    this.dirty.clear();
+    this.deleted.clear();
+    try {
+      await this.storage.write({ upserts, deletes });
+    } catch (error) {
+      this.emit('error', { error: toError(error) });
+    }
   }
 
   private emit<K extends keyof SchedulerEvents<P>>(event: K, payload: SchedulerEvents<P>[K]): void {

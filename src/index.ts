@@ -46,4 +46,10 @@ export {
 export { MemoryStorage } from './storage/memory.js';
 export { JsonFileStorage } from './storage/json-file.js';
 export { storageFileSchema, storedTaskSchema } from './storage/schema.js';
-export type { JsonValue, StorageAdapter, StoredSchedule, StoredTask } from './storage/schema.js';
+export type {
+  JsonValue,
+  StorageAdapter,
+  StorageChanges,
+  StoredSchedule,
+  StoredTask,
+} from './storage/schema.js';

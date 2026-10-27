@@ -67,10 +67,19 @@ export type StoredSchedule = z.infer<typeof storedScheduleSchema>;
 export type StoredTask = z.infer<typeof storedTaskSchema>;
 export type JsonValue = StoredTask['payload'];
 
+/** A batch of changes: tasks to insert or replace, and ids to delete. */
+export interface StorageChanges {
+  readonly upserts: readonly StoredTask[];
+  readonly deletes: readonly string[];
+}
+
 /** Where the scheduler keeps its tasks. Implement this to add a database backend. */
 export interface StorageAdapter {
   /** Returns every stored task. Called once, when the scheduler loads. */
   load(): Promise<StoredTask[]>;
-  /** Replaces the stored tasks with `tasks`. Calls are made one at a time, in order. */
-  save(tasks: readonly StoredTask[]): Promise<void>;
+  /**
+   * Applies one batch of changes. The scheduler waits for each call to finish
+   * before the next, so a database adapter can run each batch in a transaction.
+   */
+  write(changes: StorageChanges): Promise<void>;
 }

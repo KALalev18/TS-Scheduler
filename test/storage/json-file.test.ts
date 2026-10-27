@@ -51,20 +51,35 @@ describe('JsonFileStorage', () => {
   it('round-trips tasks and creates missing folders', async () => {
     const path = join(dir, 'nested', 'deeper', 'schedule.json');
     const storage = new JsonFileStorage(path);
-    await storage.save([task]);
+    await storage.write({ upserts: [task], deletes: [] });
     expect(await storage.load()).toEqual([task]);
     expect(JSON.parse(await readFile(path, 'utf8'))).toMatchObject({ version: 1 });
   });
 
   it('leaves no temporary files behind', async () => {
     const storage = new JsonFileStorage(join(dir, 'schedule.json'));
-    await Promise.all([storage.save([task]), storage.save([]), storage.save([task])]);
+    await Promise.all([
+      storage.write({ upserts: [task], deletes: [] }),
+      storage.write({ upserts: [], deletes: [task.id] }),
+      storage.write({ upserts: [task], deletes: [] }),
+    ]);
     expect(await readdir(dir)).toEqual(['schedule.json']);
+  });
+
+  it('applies deletes and keeps tasks written by earlier calls', async () => {
+    const path = join(dir, 'schedule.json');
+    const storage = new JsonFileStorage(path);
+    await storage.write({ upserts: [task, { ...task, id: 't2' }], deletes: [] });
+    // A fresh adapter that never called load() reads the file before applying changes.
+    await new JsonFileStorage(path).write({ upserts: [], deletes: ['t1'] });
+    expect((await storage.load()).map((t) => t.id)).toEqual(['t2']);
   });
 
   it('applies concurrent saves in call order', async () => {
     const storage = new JsonFileStorage(join(dir, 'schedule.json'));
-    const saves = Array.from({ length: 20 }, (_, i) => storage.save([{ ...task, runs: i }]));
+    const saves = Array.from({ length: 20 }, (_, i) =>
+      storage.write({ upserts: [{ ...task, runs: i }], deletes: [] }),
+    );
     await Promise.all(saves);
     expect((await storage.load())[0]?.runs).toBe(19);
   });
@@ -92,8 +107,9 @@ describe('JsonFileStorage', () => {
     await writeFile(blocked, '');
     // A path *inside* a regular file cannot be created.
     const storage = new JsonFileStorage(join(blocked, 'schedule.json'));
-    await expect(storage.save([task])).rejects.toThrow(StorageError);
-    await expect(storage.save([task])).rejects.toThrow('cannot write');
+    const changes = { upserts: [task], deletes: [] };
+    await expect(storage.write(changes)).rejects.toThrow(StorageError);
+    await expect(storage.write(changes)).rejects.toThrow('cannot write');
   });
 
   it('persists a scheduler across restarts', async () => {
