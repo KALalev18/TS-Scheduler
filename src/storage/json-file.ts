@@ -11,8 +11,17 @@ import {
   type StoredTask,
 } from './schema.js';
 
+/**
+ * The file does not exist yet. Linux reports a path through a regular file
+ * (`file.txt/schedule.json`) as ENOTDIR where Windows reports ENOENT; either
+ * way there is nothing to read, and the next write reports the real problem.
+ */
 function isMissingFile(error: unknown): boolean {
-  return error instanceof Error && 'code' in error && error.code === 'ENOENT';
+  return (
+    error instanceof Error &&
+    'code' in error &&
+    (error.code === 'ENOENT' || error.code === 'ENOTDIR')
+  );
 }
 
 /**
@@ -90,7 +99,8 @@ ${z.prettifyError(result.error)}`,
       );
       await rename(temp, this.path);
     } catch (error) {
-      await rm(temp, { force: true });
+      // Best effort: a failed cleanup must not hide the error that caused it.
+      await rm(temp, { force: true }).catch(() => undefined);
       throw new StorageError(`cannot write ${this.path}`, { cause: error });
     }
   }
