@@ -9,7 +9,7 @@
 
 ![Demo of the ts-scheduler CLI: DST-aware preview, priorities, a missed deadline and retries with backoff](docs/demo.svg)
 
-<sub>Recorded from real CLI output with <code>npm run demo</code>.</sub>
+<sub>Recorded from real CLI output with <code>npm run demo</code>; the yellow notes are added by the script.</sub>
 
 ```mermaid
 flowchart LR
@@ -112,6 +112,7 @@ ts-scheduler add "flaky upload" --in 5s --retries 2 --fail-first 2 --backoff 500
 
 ts-scheduler list               # soonest first
 ts-scheduler run                # Ctrl+C stops gracefully, a second Ctrl+C aborts running tasks
+                                # (while it runs, add/remove on the same file are refused; list still works)
 ts-scheduler remove 3e05        # unique id prefix
 ```
 
@@ -190,7 +191,7 @@ The "sorted array" baseline uses binary-search insert plus `splice`, the fastest
 ## Tests
 
 ```bash
-npm test            # 148 tests
+npm test            # 151 tests
 npm run coverage    # same, with v8 coverage
 npm run check       # lint + format + typecheck + coverage + build (what CI runs)
 ```
@@ -198,7 +199,7 @@ npm run check       # lint + format + typecheck + coverage + build (what CI runs
 - **Property-based tests** (fast-check): the heap always drains as a stable sort; interleaved push/pop always returns the minimum; `next()` always matches the independent reference implementation; iterating a rule never skips or duplicates occurrences across DST; a daily wall-clock rule fires exactly once per local day for 400 days; intraday rules are evenly spaced; the backoff delay is always within bounds.
 - **Scheduler tests** use `FakeClock`, so retries, timeouts, deadlines and multi-day recurrence run instantly and deterministically.
 - **Compile-time tests**: `@ts-expect-error` and `expectTypeOf` check that wrong payloads, unknown task types, unknown events and invalid state transitions do not compile. `npm run typecheck` enforces them.
-- **Coverage** (`npm run coverage`): 99.0% lines, 98.7% statements, 95.0% branches, 99.0% functions. CI fails below 90/85%, and the CLI entry file (`src/cli/main.ts`) is excluded.
+- **Coverage** (`npm run coverage`): 98.9% lines, 98.5% statements, 95.0% branches, 99.0% functions. CI fails below 90/85%. The two entry files with no logic of their own (`src/index.ts`, `src/cli/main.ts`) are excluded.
 
 ## Project structure
 
@@ -223,7 +224,7 @@ API reference: generated with `npm run docs` (TypeDoc) and published to GitHub P
 
 ## Limitations
 
-- One process. Two schedulers sharing a storage file would both run the same tasks; there is no locking or leasing.
+- One process per store. The library has no locking or leasing, so two schedulers sharing a storage file would both run the same tasks. The CLI guards against this: `run` holds a `<file>.lock` file, and a second `run`, `add` or `remove` on the same file is refused with a clear error. A lock left by a crashed process is replaced.
 - At-least-once, not exactly-once: an attempt interrupted by a crash runs again.
 - The RRULE subset has no `YEARLY`, `BYSETPOS` or ordinal weekdays ("first Monday"). Unsupported parts are rejected with a clear error, not ignored.
 - A rule that starts "now" first runs at its next occurrence at or after now, rounded down to the second.
