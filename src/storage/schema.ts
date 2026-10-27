@@ -67,6 +67,20 @@ export type StoredSchedule = z.infer<typeof storedScheduleSchema>;
 export type StoredTask = z.infer<typeof storedTaskSchema>;
 export type JsonValue = StoredTask['payload'];
 
+/**
+ * Copies a task. Faster than `structuredClone` because the shape is known:
+ * only the (JSON) payload can be deeply nested.
+ */
+export function copyStoredTask(task: StoredTask): StoredTask {
+  const { payload } = task;
+  return {
+    ...task,
+    schedule: { ...task.schedule },
+    retry: { ...task.retry },
+    payload: typeof payload === 'object' && payload !== null ? structuredClone(payload) : payload,
+  };
+}
+
 /** A batch of changes: tasks to insert or replace, and ids to delete. */
 export interface StorageChanges {
   readonly upserts: readonly StoredTask[];
@@ -80,6 +94,7 @@ export interface StorageAdapter {
   /**
    * Applies one batch of changes. The scheduler waits for each call to finish
    * before the next, so a database adapter can run each batch in a transaction.
+   * The tasks passed in are copies the scheduler no longer touches.
    */
   write(changes: StorageChanges): Promise<void>;
 }

@@ -4,6 +4,7 @@ import { dirname } from 'node:path';
 import { z } from 'zod';
 import { StorageError } from '../errors.js';
 import {
+  copyStoredTask,
   storageFileSchema,
   type StorageAdapter,
   type StorageChanges,
@@ -37,13 +38,13 @@ export class JsonFileStorage implements StorageAdapter {
   async load(): Promise<StoredTask[]> {
     const tasks = await this.read();
     this.tasks = new Map(tasks.map((task) => [task.id, task]));
-    return structuredClone(tasks);
+    return tasks.map(copyStoredTask);
   }
 
   write({ upserts, deletes }: StorageChanges): Promise<void> {
     const apply = async () => {
       this.tasks ??= new Map((await this.read()).map((task) => [task.id, task]));
-      for (const task of upserts) this.tasks.set(task.id, structuredClone(task));
+      for (const task of upserts) this.tasks.set(task.id, task);
       for (const id of deletes) this.tasks.delete(id);
       await this.writeFile([...this.tasks.values()]);
     };

@@ -8,7 +8,12 @@ import { Recurrence, RecurrenceError, type StartInput } from './recurrence.js';
 import { backoffDelay, resolveRetry, type RetryPolicy } from './retry.js';
 import { transition, type TaskState } from './state.js';
 import { MemoryStorage } from './storage/memory.js';
-import type { JsonValue, StorageAdapter, StoredTask } from './storage/schema.js';
+import {
+  copyStoredTask,
+  type JsonValue,
+  type StorageAdapter,
+  type StoredTask,
+} from './storage/schema.js';
 
 /**
  * Constraint for a map from task type name to payload type: every payload must
@@ -330,7 +335,7 @@ export class Scheduler<P extends PayloadMap<P>> {
     const task: Task = { data, recurrence, token: 0 };
     this.tasks.set(id, task);
     this.enqueue(task);
-    this.emit('taskScheduled', { task: this.snapshot(task), runAt: firstRun });
+    this.emit('taskScheduled', () => ({ task: this.snapshot(task), runAt: firstRun }));
     if (options.signal) this.attachSignal(task, options.signal);
     const saved = this.save(id);
     this.pump();
@@ -350,7 +355,7 @@ export class Scheduler<P extends PayloadMap<P>> {
     task.data.nextRunAt = null;
     task.detachSignal?.();
     this.running.get(id)?.abort(new TaskCancelledError());
-    this.emit('taskCancelled', { task: this.snapshot(task) });
+    this.emit('taskCancelled', () => ({ task: this.snapshot(task) }));
     await this.save(id);
     return true;
   }
@@ -457,12 +462,12 @@ export class Scheduler<P extends PayloadMap<P>> {
     if (data.attempt === 0 && data.deadlineMs !== undefined) {
       const deadline = scheduledAt + data.deadlineMs;
       if (now > deadline) {
-        this.emit('taskMissed', {
+        this.emit('taskMissed', () => ({
           task: this.snapshot(task),
           scheduledAt,
           deadline,
           action: data.onMissed,
-        });
+        }));
         if (data.onMissed === 'skip') {
           this.setState(task, 'missed');
           data.misses++;
@@ -479,7 +484,7 @@ export class Scheduler<P extends PayloadMap<P>> {
     data.nextRunAt = null;
     const controller = new AbortController();
     this.running.set(data.id, controller);
-    this.emit('taskStarted', { task: this.snapshot(task), attempt: data.attempt });
+    this.emit('taskStarted', () => ({ task: this.snapshot(task), attempt: data.attempt }));
     void this.save(data.id);
     const run = this.execute(task, controller, scheduledAt).finally(() => {
       this.inflight.delete(run);
@@ -541,7 +546,10 @@ export class Scheduler<P extends PayloadMap<P>> {
       this.setState(task, 'done');
       data.runs++;
       delete data.lastError;
-      this.emit('taskCompleted', { task: this.snapshot(task), durationMs: now - startedAt });
+      this.emit('taskCompleted', () => ({
+        task: this.snapshot(task),
+        durationMs: now - startedAt,
+      }));
       this.scheduleNextOccurrence(task, now);
     } else if (controller.signal.reason === STOPPED) {
       // Scheduler stopped mid-attempt: put it back so it runs again on the next start.
@@ -563,12 +571,12 @@ export class Scheduler<P extends PayloadMap<P>> {
         this.setState(task, 'failed');
         data.failures++;
       }
-      this.emit('taskFailed', {
+      this.emit('taskFailed', () => ({
         task: this.snapshot(task),
         error,
         willRetry: retryAt !== null,
         retryAt,
-      });
+      }));
       if (retryAt === null) this.scheduleNextOccurrence(task, now);
     }
     void this.save(data.id);
@@ -591,7 +599,7 @@ export class Scheduler<P extends PayloadMap<P>> {
     data.scheduledAt = next;
     data.nextRunAt = next;
     this.enqueue(task);
-    this.emit('taskScheduled', { task: this.snapshot(task), runAt: next });
+    this.emit('taskScheduled', () => ({ task: this.snapshot(task), runAt: next }));
   }
 
   private enqueue(task: Task): void {
@@ -650,7 +658,7 @@ export class Scheduler<P extends PayloadMap<P>> {
     this.queuedWrite = undefined;
     const upserts = [...this.dirty].flatMap((id) => {
       const task = this.tasks.get(id);
-      return task ? [structuredClone(task.data)] : [];
+      return task ? [copyStoredTask(task.data)] : [];
     });
     const deletes = [...this.deleted];
     this.dirty.clear();
@@ -658,18 +666,23 @@ export class Scheduler<P extends PayloadMap<P>> {
     try {
       await this.storage.write({ upserts, deletes });
     } catch (error) {
-      this.emit('error', { error: toError(error) });
+      this.emit('error', () => ({ error: toError(error) }));
     }
   }
 
-  private emit<K extends keyof SchedulerEvents<P>>(event: K, payload: SchedulerEvents<P>[K]): void {
-    this.emitter.emit(event, payload, (error) => {
-      if (event !== 'error') this.emit('error', { error: toError(error) });
+  /** Emits `event`. The payload (with its task snapshot) is only built if someone listens. */
+  private emit<K extends keyof SchedulerEvents<P>>(
+    event: K,
+    payload: () => SchedulerEvents<P>[K],
+  ): void {
+    if (this.emitter.listenerCount(event) === 0) return;
+    this.emitter.emit(event, payload(), (error) => {
+      if (event !== 'error') this.emit('error', () => ({ error: toError(error) }));
     });
   }
 
   private snapshot(task: Task): TaskSnapshot<P> {
     // `type` and `payload` were checked against P when the task was added.
-    return structuredClone(task.data) as TaskSnapshot<P>;
+    return copyStoredTask(task.data) as TaskSnapshot<P>;
   }
 }
