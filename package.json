@@ -70,7 +70,7 @@
     "release": "npm run build && changeset publish"
   },
   "dependencies": {
-    "commander": "15.0.0",
+    "commander": "15.1.0",
     "temporal-polyfill": "1.0.6",
     "zod": "4.6.7"
   },
